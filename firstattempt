@@ -1,0 +1,92 @@
+import wx
+import shutil
+import time
+import datetime as dt
+import os
+
+src = "C:/Users/user/Desktop/Folder A"
+dst = "C:/Users/user/Desktop/Folder B"
+
+class windowClass(wx.Frame):
+    def __init__(self, *args, **kwargs):
+        super(windowClass, self).__init__(*args, **kwargs)
+        self.basicGUI()
+
+    def basicGUI(self):
+        panel = wx.Panel(self)
+
+        menuBar = wx.MenuBar()
+        fileButton = wx.Menu()
+        
+        menuBar.Append(fileButton, "&File")
+        self.SetMenuBar(menuBar)
+
+        exitItem = wx.MenuItem(fileButton, wx.ID_EXIT, "Quit\tCtrl+Q")
+        fileButton.AppendItem(exitItem)
+        self.Bind(wx.EVT_TOOL, self.quitProgram, exitItem)
+
+        self.Show()
+
+        wx.StaticText(panel, -1, "Copy Modified Files From:", pos=(10,10))
+        self.srcText = wx.TextCtrl(panel, -1, src, pos=(10,30), \
+                                            size=(350,22))
+        self.srcPathChange = wx.Button(panel, label="Change", pos=(362,28), size=(80,25))
+        self.Bind(wx.EVT_BUTTON, self.srcPathChangeButton, self.srcPathChange)
+
+        
+        wx.StaticText(panel, -1, "Copy Modified Files To:", pos=(10,70))
+        self.dstText = wx.TextCtrl(panel, -1, dst, pos=(10,90),\
+                                          size=(350,22))
+        self.dstPathChange = wx.Button(panel, label="Change", pos=(362,88), size=(80,25))
+        self.Bind(wx.EVT_BUTTON, self.dstPathChangeButton, self.dstPathChange)
+
+
+     
+
+        self.transFiles = wx.Button(panel, label="Copy Files", pos=(10, 140), \
+                                            size=(430,50))
+        self.Bind(wx.EVT_BUTTON, self.transFilesButton, self.transFiles)
+
+    def quitProgram(self, e):
+        self.Close()
+    
+    def srcPathChangeButton(self, e):
+        openDirDialog = wx.DirDialog(self)
+        if openDirDialog.ShowModal() != wx.ID_CANCEL:
+            input_stream = openDirDialog.GetPath()
+            self.srcText.Value = input_stream
+
+    def dstPathChangeButton(self, e):
+        openDirDialog = wx.DirDialog(self)
+        if openDirDialog.ShowModal() != wx.ID_CANCEL:
+            input_stream = openDirDialog.GetPath()
+            self.dstText.Value = input_stream
+
+    
+
+    def transFilesButton(self, e):
+        now = dt.datetime.now()
+        oneDayAgo = now-dt.timedelta(minutes= 1440)
+        print oneDayAgo
+        for root,dirs,files in os.walk(src): 
+    
+            for f in files:
+                path=os.path.join(root,f)
+                print path
+                mtime=dt.datetime.fromtimestamp(os.path.getmtime(path))
+                print mtime
+                if mtime > oneDayAgo:
+                    if f.endswith('.txt'):
+                        shutil.copy(path, dst)
+                        print f
+
+
+
+
+    
+        
+    
+
+app = wx.App()
+myWindow = windowClass(None, size = (470, 280), pos=(100,10)) 
+app.MainLoop()
